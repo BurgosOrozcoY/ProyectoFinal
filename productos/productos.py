@@ -78,14 +78,33 @@ class Productos:
             print(e)
             return []
 
-    def buscar(self):
-        pass
+    @staticmethod
+    def buscar(codigo):
+        try:
+            cursor.execute("select * from productos where id = %s", (codigo,))
+            return cursor.fetchall()
+        except Exception as e:
+            print(e)
+            return []
 
-    def eliminar(self):
-        pass
+    @staticmethod
+    def eliminar(codigo):
+        try:
+            cursor.execute("delete from productos where id = %s", (codigo,))
+            conexion.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
 
     def modificar(self):
-        pass
+        try:
+            cursor.execute("update productos set nombre = %s, stock = %s, stockMinimo = %s, precioCompra = %s, precioVenta = %s where id = %s", (self._nombre, self._stock, self._minStock, self._precioCompra, self._precioVenta, self._codigo))
+            conexion.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
 
     def verificarStock(self):
         pass
