@@ -6,7 +6,7 @@ from tkinter import messagebox
 class App:
     def __init__(self, ventana):
         self.ventana = ventana
-        self.ventana.title("Pre-alpha 0.4.3")
+        self.ventana.title("Pre-alpha 0.5.3")
         self.ventana.geometry("800x600")
         self.ventana.resizable(True,True)
         self.main()
@@ -90,6 +90,15 @@ class App:
             self.BtnBuscar = Button(self.ventana, text = "Buscar", command = lambda: self.buscar_controller(tipo))
             self.BtnBuscar.pack(pady = 10)
             Button(self.ventana, text = "Regresar", command = lambda: self.menu_acciones(tipo)).pack(pady = 10)
+        elif tipo == "Productos":
+            Label(self.ventana, text = "...Buscar producto...").pack(pady = 10)
+            Label(self.ventana, text = "Codigo del producto:").pack(pady = 5)
+            self.codigo = Entry(self.ventana)
+            self.codigo.focus()
+            self.codigo.pack(pady = 5)
+            self.BtnBuscar = Button(self.ventana, text = "Buscar", command = lambda: self.buscar_controller(tipo))
+            self.BtnBuscar.pack(pady = 10)
+            Button(self.ventana, text = "Regresar", command = lambda: self.menu_acciones(tipo)).pack(pady = 10)
 
     def eliminar_view(self, tipo):
         self.clear()
@@ -99,6 +108,14 @@ class App:
             self.idEmpleado = Entry(self.ventana)
             self.idEmpleado.focus()
             self.idEmpleado.pack(pady = 5)
+            Button(self.ventana, text = "Eliminar", command = lambda: self.eliminar_controller(tipo)).pack(pady = 10)
+            Button(self.ventana, text = "Regresar", command = lambda: self.menu_acciones(tipo)).pack(pady = 10)
+        elif tipo == "Productos":
+            Label(self.ventana, text = "...Eliminar producto...").pack(pady = 10)
+            Label(self.ventana, text = "Codigo del producto:").pack(pady = 5)
+            self.codigo = Entry(self.ventana)
+            self.codigo.focus()
+            self.codigo.pack(pady = 5)
             Button(self.ventana, text = "Eliminar", command = lambda: self.eliminar_controller(tipo)).pack(pady = 10)
             Button(self.ventana, text = "Regresar", command = lambda: self.menu_acciones(tipo)).pack(pady = 10)
 
@@ -117,6 +134,29 @@ class App:
             self.puestoSeleccionado = ""
             Button(self.ventana, text="Administrador", command= lambda: self.definir_puesto("Admin")).pack(pady = 10)
             Button(self.ventana, text="Empleado", command= lambda: self.definir_puesto("Empleado")).pack(pady = 10)
+            Button(self.ventana, text = "Guardar cambios", command = lambda: self.modificar_controller(tipo)).pack(pady = 10)
+            Button(self.ventana, text = "Regresar", command = lambda: self.menu_acciones(tipo)).pack(pady = 10)
+        elif tipo == "Productos":
+            Label(self.ventana, text = "...Modificar datos del producto...").pack(pady = 10)
+            Label(self.ventana, text = "Codigo del producto:").pack(pady = 5)
+            self.codigo = Entry(self.ventana)
+            self.codigo.focus()
+            self.codigo.pack(pady = 5)
+            Label(self.ventana, text= "Nuevo nombre del producto:").pack(pady = 5)
+            self.nombre = Entry(self.ventana)
+            self.nombre.pack(pady = 5)
+            Label(self.ventana, text= "Nuevo stock actual:").pack(pady = 5)
+            self.stock = Entry(self.ventana)
+            self.stock.pack(pady = 5)
+            Label(self.ventana, text= "Nuevo stock minimo:").pack(pady = 5)
+            self.minStock = Entry(self.ventana)
+            self.minStock.pack(pady = 5)
+            Label(self.ventana, text= "Nuevo precio de compra:").pack(pady = 5)
+            self.precioCompra = Entry(self.ventana)
+            self.precioCompra.pack(pady = 5)
+            Label(self.ventana, text= "Nuevo precio de venta:").pack(pady = 5)
+            self.precioVenta = Entry(self.ventana)
+            self.precioVenta.pack(pady = 5)
             Button(self.ventana, text = "Guardar cambios", command = lambda: self.modificar_controller(tipo)).pack(pady = 10)
             Button(self.ventana, text = "Regresar", command = lambda: self.menu_acciones(tipo)).pack(pady = 10)
 
@@ -182,6 +222,15 @@ class App:
                     self.respuesta_sql(respuesta)
             else:
                 messagebox.showerror(title="Error", message="¡No se ha ingresado un ID!")
+        elif tipo == "Productos":
+            if self.codigo.get() != "":
+                codigo = self.codigo.get()
+                confirmar = messagebox.askquestion(title= "Confirmar eliminación", message= f"¿Desea eliminar el producto con código {codigo}?")
+                if confirmar == "yes":
+                    respuesta = productos.Productos.eliminar(codigo)
+                    self.respuesta_sql(respuesta)
+            else:
+                messagebox.showerror(title="Error", message="¡No se ha ingresado un código!")
 
     def buscar_controller(self, tipo):
         if tipo == "Empleados":
@@ -199,6 +248,21 @@ class App:
                     messagebox.showerror(title="Error", message="¡No se encontraron resultados!")
             else:
                 messagebox.showerror(title="Error", message="¡No se ha ingresado un nombre!")
+        elif tipo == "Productos":
+            if self.codigo.get() != "":
+                codigo = self.codigo.get()
+                registros = productos.Productos.buscar(codigo)
+                filas = ""
+                if len(registros) > 0:
+                    for fila in registros:
+                        filas = filas + (f"Código: {fila[0]}\nProducto: {fila[1]}\nStock: {fila[2]}")
+                    self.clear()
+                    Label(self.ventana, text = f"Resultado de la búsqueda:\n{filas}").pack(pady = 10)
+                    Button(self.ventana, text = "Regresar", command = lambda: self.buscar_view(tipo)).pack(pady = 10)
+                else:
+                    messagebox.showerror(title="Error", message="¡No se encontraron resultados!")
+            else:
+                messagebox.showerror(title="Error", message="¡No se ha ingresado un código!")
 
     def modificar_controller(self, tipo):
         if tipo == "Empleados":
@@ -214,6 +278,22 @@ class App:
                     del empleado
             elif self.puestoSeleccionado == "":
                 messagebox.showerror(title="Error", message="¡No se ha seleccionado un puesto!")
+            else:
+                messagebox.showerror(title="Error", message="¡No se han ingresado todos los datos!")
+        elif tipo == "Productos":
+            if self.codigo.get() != "" and self.nombre.get() != "" and self.stock.get() != "" and self.minStock.get() != "" and self.precioCompra.get() != "" and self.precioVenta.get() != "":
+                codigo = self.codigo.get()
+                nombre = self.nombre.get()
+                stock = self.stock.get()
+                minStock = self.minStock.get()
+                precioCompra = self.precioCompra.get()
+                precioVenta = self.precioVenta.get()
+                confirmar = messagebox.askquestion(title= "Confirmar modificación", message= f"¿Desea modificar el producto con código {codigo}?")
+                if confirmar == "yes":
+                    producto = productos.Productos(codigo, nombre, stock, minStock, precioCompra, precioVenta)
+                    respuesta = producto.modificar()
+                    self.respuesta_sql(respuesta)
+                    del producto
             else:
                 messagebox.showerror(title="Error", message="¡No se han ingresado todos los datos!")
 
